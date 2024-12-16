@@ -33,6 +33,90 @@ def main():
                                     xmas_count += 1
     print(f'Day 1: Number of {string_to_find} found in grid = {xmas_count}')
 
+    # Day4b findsX - MASes
+    # pattern_mm
+    # == ==
+    # M.M
+    # .A.
+    # S.S
+
+    # pattern_sm
+    # == ==
+    # S.M
+    # .A.
+    # S.M
+
+    # pattern_ss
+    # == ==
+    # S.S
+    # .A.
+    # M.M
+
+    # pattern_ms
+    # == ==
+    # M.S
+    # .A.
+    # M.S
+    x_mas_count = 0
+    # Directions which form an 'X', centered around the 'A' character
+    diagonal_directions = [
+        (-1, -1),  # diagonal up-left
+        (-1, 1),  # diagonal up-right
+        (1, -1),  # diagonal down-left
+        (1, 1)  # diagonal down-right
+    ]
+
+    for x in range(len(input_grid)):
+        for y in range(len(input_grid[0])):
+            letter = input_grid[x][y]
+            if letter == 'A':
+                # check if there is one letter of space surrounding the 'A'
+                if (0 <= x + -1 < len(input_grid)) and (0 <= y + -1 < len(input_grid[0])) \
+                    and (0 <= x + 1 < len(input_grid)) and (0 <= y + 1 < len(input_grid[0])):
+
+                    # pattern_mm
+                    if _diag_up_left(input_grid, x, y) == 'M':
+                        if _diag_up_right(input_grid, x, y) == 'M':
+                            if _diag_down_left(input_grid, x, y) == 'S':
+                                if _diag_down_right(input_grid, x, y) == 'S':
+                                    x_mas_count += 1
+                    # pattern_sm
+                    if _diag_up_left(input_grid, x, y) == 'S':
+                        if _diag_up_right(input_grid, x, y) == 'M':
+                            if _diag_down_left(input_grid, x, y) == 'S':
+                                if _diag_down_right(input_grid, x, y) == 'M':
+                                    x_mas_count += 1
+                    # pattern_ss
+                    if _diag_up_left(input_grid, x, y) == 'S':
+                        if _diag_up_right(input_grid, x, y) == 'S':
+                            if _diag_down_left(input_grid, x, y) == 'M':
+                                if _diag_down_right(input_grid, x, y) == 'M':
+                                    x_mas_count += 1
+                    # pattern_ms
+                    if _diag_up_left(input_grid, x, y) == 'M':
+                        if _diag_up_right(input_grid, x, y) == 'S':
+                            if _diag_down_left(input_grid, x, y) == 'M':
+                                if _diag_down_right(input_grid, x, y) == 'S':
+                                    x_mas_count += 1
+
+    print(f'Day @: Number of X-MAS found in grid = {x_mas_count}')
+
+
+def _diag_up_left(input_grid, x, y):
+    return input_grid[x - 1][y - 1]
+
+
+def _diag_up_right(input_grid, x, y):
+    return input_grid[x - 1][y + 1]
+
+
+def _diag_down_left(input_grid, x, y):
+    return input_grid[x + 1][y - 1]
+
+
+def _diag_down_right(input_grid, x, y):
+    return input_grid[x + 1][y + 1]
+
 
 def read_input():
     input_grid = []
