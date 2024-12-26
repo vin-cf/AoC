@@ -38,35 +38,18 @@ def build_graph(pages, relevant_rules):
             graph[ep].append(lp)
             in_degree[lp] += 1
 
-    return graph, in_degree
+    return in_degree
 
 
-def topological_sort(pages, relevant_rules):
-    """
-    Performs a topological sort given a set of pages and rules.
-    Returns a list of pages in a valid order if one exists, else None.
-    """
-    graph, in_degree = build_graph(pages, relevant_rules)
+def custom_sort(pages, relevant_rules):
+    in_degree = build_graph(pages, relevant_rules)
 
-    # Queue for nodes with in-degree 0
-    queue = deque([node for node in pages if in_degree[node] == 0])
     sorted_order = []
-
-    while queue:
-        current = queue.popleft()
-        sorted_order.append(current)
-        # Reduce the in-degree of each successor
-        for neighbor in graph[current]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
-
-    # If we processed all nodes, we have a valid topological order
-    if len(sorted_order) == len(pages):
-        return sorted_order
-    else:
-        # A cycle or invalid ordering detected
-        return None
+    for locator in range(len(pages)):
+        for page in pages:
+            if in_degree.get(page) == locator:
+                sorted_order.append(page)
+    return sorted_order
 
 
 def main():
@@ -91,7 +74,7 @@ def main():
         # As a result, capture 'valid' safety manuals
         if False in [safety_manual.index(later_page(rule)) > safety_manual.index(earlier_page(rule)) for rule in relevant_rules]:
             incorrectly_ordered_manuals.append(safety_manual)
-            corrected_manuals.append(topological_sort(safety_manual, relevant_rules))
+            corrected_manuals.append(custom_sort(safety_manual, relevant_rules))
         else:
             valid_safety_manuals.append(safety_manual)
 
