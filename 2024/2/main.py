@@ -71,7 +71,8 @@ def process_pd(puzzle_input: List):
         if (_is_all_ascending_pd(report)
                 or _is_all_descending_pd(report)):
             safe_count += 1
-            # safe_lists.append(report)
+            print(report)
+
 
     return safe_count
 
