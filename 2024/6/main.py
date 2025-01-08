@@ -2,36 +2,30 @@ from itertools import cycle
 from concurrent.futures import ProcessPoolExecutor
 
 import cProfile
-from multiprocessing import Value, Process
-
+import time
 
 def main():
-    from multiprocessing import Process
-
-    # Initialize shared counter
-    count = Value('i', 0)  # 'i' indicates integer type
-
-    starting_dir = '^'
-
-    x_dir, y_dir = 0, 0
     lab_map = read_input()
     x, y = (0, 0)
-
+    directions = {
+        'U': (-1, 0),  # up
+        'R': (0, 1),   # right
+        'D': (1, 0),   # down
+        'L': (0, -1)   # left
+    }
+    successful_blocks = set()
     for r, row in enumerate(lab_map):
         for c, char in enumerate(row):
             if char == '^':
                 x, y = (r, c)
                 break
     print(f'DEBUG: The size of the map is: {len(lab_map)} x {len(lab_map[0])}')
-    # traverse(x, y, lab_map)
     size_x = len(lab_map)
     size_y = len(lab_map[0])
 
-
-    # Use ProcessPoolExecutor` for parallel processing
     with ProcessPoolExecutor() as executor:
         futures = [
-            executor.submit(traverse, x, y, lab_map, r, c, size_x, size_y, count)
+            executor.submit(traverse, x, y, lab_map, r, c, size_x, size_y, directions)
             for r, row in enumerate(lab_map)
             for c, char in enumerate(row)
             if char not in {'^', '#'}
@@ -39,42 +33,19 @@ def main():
         for future in futures:
             future.result()  # Ensure all tasks are complete
 
-    # # iterate through each row and column of the modified_map,
-    # # put a # character in each coordinate of the map
-    # for r, row in enumerate(lab_map):
-    #     for c, char in enumerate(lab_map):
-    #         if (r, c) != '^' or (r, c) != '#':
-    #             # modified_map = [row[:] for row in lab_map]
-    #             # modified_map[r][c] = '#'
-    #             # print(f'DEBUG: Placing obstacle at coordinates: {r, c}')
-    #             traverse(x, y, lab_map, r, c, size_x, size_y, count)
-    #         elif c == 3:
-    #             break
-    #         else:
-    #             continue
+    print(f'DEBUG: The number of successful blocks is: {len(successful_blocks)}')
 
-
-def traverse(x, y, lab_map, obstacle_x, obstacle_y, size_x, size_y, count):
+def traverse(x, y, lab_map, obstacle_x, obstacle_y, size_x, size_y, directions):
     traversed_coordinates = set()
-    directions = {
-        'U': (-1, 0),  # up
-        'R': (0, 1),   # right
-        'D': (1, 0),   # down
-        'L': (0, -1)   # left
-    }
-
     directions_cycle = cycle(directions)
-
     x_dir, y_dir = directions['U']
 
     # See if we can traverse in this direction without going off-grid
     # or hitting an obstacle denoted by '#'
     while (0 <= x + x_dir < size_x) and (0 <= y + y_dir < size_y):
         if (x, y, x_dir, y_dir) in traversed_coordinates:
-            with count.get_lock():
-                count.value += 1
-            print(f'The guard is in a loop. Count: {count}')
-            break
+            print(f'The guard is in a loop with obstacle at coordinates: {obstacle_x, obstacle_y}')
+            return obstacle_x, obstacle_y
         if not can_traverse(x, y, x_dir, y_dir, lab_map, obstacle_x, obstacle_y):
             # the guard turns 90 degrees to the right
             x_dir, y_dir = directions[next(directions_cycle)]
@@ -99,7 +70,6 @@ def can_traverse(x, y, x_dir, y_dir, lab_map, obstacle_x, obstacle_y):
     else:
         return False
 
-
 def read_input():
     input_grid = []
     try:
@@ -121,6 +91,9 @@ def read_input():
 if __name__ == '__main__':
     profiler = cProfile.Profile()
     profiler.enable()
+    start_time = time.perf_counter()
     main()
+    end_time = time.perf_counter()
+    print(f"Total runtime: {end_time - start_time:.4f} seconds")
     profiler.disable()
     profiler.print_stats(sort='time')  # Print profiling results
